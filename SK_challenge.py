@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import chirp, find_peaks, peak_widths
 
-PhysicHelpBot = telebot.TeleBot('7959181544:AAFm19Tk_hVbZUHK6nv6-pft1tnEsVE9tqs')
+PhysicHelpBot = telebot.TeleBot('?')
 
 from telebot import types
 
