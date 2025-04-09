@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import chirp, find_peaks, peak_widths
 from telebot import types
-from main_calc import Button_calc
+from main_calc import ButtonCalc
 
 LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
 matplotlib.use('agg') # это нужно для графика
 
+user_states = {}
 
 @LaserPhysicHelpBot.message_handler(commands=['start'])
 def startBot(message):
@@ -44,8 +45,13 @@ def Random_text(message):
 # 1. Нужно добавить приём только .txt
 # 2. Нужно принимать файл только при переходе по соответствующей кнопке
 # О расчёте подробнее здесь: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.peak_widths.html
-@LaserPhysicHelpBot.message_handler(content_types=['document'])
+@LaserPhysicHelpBot.message_handler(content_types=['document'],
+                                    func=lambda message: user_states.get(message.chat.id) == "waiting_for_txt")
 def graphic_peak_widths(message):
+    if not message.document.file_name.endswith('.txt'):
+        LaserPhysicHelpBot.reply_to(message, "❌ Файл должен быть .txt!")
+        return
+    user_states.pop(message.chat.id, None)
     try:
         chat_id = message.chat.id
         file_info = LaserPhysicHelpBot.get_file(message.document.file_id)
@@ -61,7 +67,7 @@ def graphic_peak_widths(message):
         plt.savefig("test.png")
         LaserPhysicHelpBot.send_photo(chat_id, photo=open('test.png', 'rb'))
     except Exception as e:
-        LaserPhysicHelpBot.reply_to(message, e)
+        LaserPhysicHelpBot.reply_to(message, f"⚠️ Ошибка: {str(e)}")
 
 
 # Каждая функция принимает каждую отдельную кнопку, чтобы различать, что нужно считать.
@@ -120,8 +126,11 @@ def response(function_call):
             LaserPhysicHelpBot.register_next_step_handler(msg, about_len)
         # Расчёт графика (см. тег content_types=['document'])
         elif function_call.data == 'resonance':
-            LaserPhysicHelpBot.send_message(function_call.message.chat.id, "Отправьте файл в формате .txt, "
-                                                                           "данные расположите в одну строку")
+            user_states[function_call.message.chat.id] = "waiting_for_txt"
+            LaserPhysicHelpBot.send_message(
+                function_call.message.chat.id,
+                "Отправьте файл в формате .txt, данные расположите в одну строку"
+            )
             LaserPhysicHelpBot.answer_callback_query(function_call.id)
         elif function_call.data == "fluence":
             button = types.InlineKeyboardMarkup()
@@ -183,12 +192,13 @@ def about_len(message):
     try:
         lens = int(message.text)
         if lens < 380 or lens > 780:
-            LaserPhysicHelpBot.send_message(message.chat.id, "Невидимая длинна волны для человека")
+            LaserPhysicHelpBot.send_message(message.chat.id, "Невидимая длина волны для человека")
         else:
-            for cur_color in calc_for_buttons.dict.keys():
-                if calc_for_buttons.dict[cur_color][0] <= lens <= calc_for_buttons.dict[cur_color][1]:
-                    outer_str = (f"Вы спросили об этой длине волны, а именно о {cur_color} цвете\n"
-                         f"Прочитать больше можно по ссылке: https://astronomy.ru/forum/index.php/topic,50316.0.html")
+            for cur_color in calc_for_buttons.color_ranges:
+                start, end = calc_for_buttons.color_ranges[cur_color]
+                if start <= lens <= end:
+                    outer_str = (f"Вы спросили о длине волны {lens} нм. Это соответствует {cur_color} цвету\n"
+                                 f"Прочитать больше можно по ссылке: https://astronomy.ru/forum/index.php/topic,50316.0.html")
                     LaserPhysicHelpBot.send_message(message.chat.id, outer_str)
                     break
     except ValueError:
@@ -196,5 +206,5 @@ def about_len(message):
 
 
 if __name__ == "__main__":
-    calc_for_buttons = Button_calc()
+    calc_for_buttons = ButtonCalc()
     LaserPhysicHelpBot.infinity_polling()
