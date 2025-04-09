@@ -6,7 +6,7 @@ from scipy.signal import chirp, find_peaks, peak_widths
 from telebot import types
 from main_calc import Button_calc
 
-LaserPhysicHelpBot = telebot.TeleBot('7959181544:AAFm19Tk_hVbZUHK6nv6-pft1tnEsVE9tqs') # токен лежит в тг
+LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
 matplotlib.use('agg') # это нужно для графика
 
 
