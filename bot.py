@@ -6,18 +6,19 @@ import logging
 from scipy.signal import find_peaks, peak_widths
 from telebot import types
 
+from Calc_classes.Vk_album import Vk_upload
 from Calc_classes.WeatherHolder import WeatherHandler
 from Calc_classes.MainCalc import ButtonCalc
-
-LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
-WEATHER_API_KEY = '?'  # API ключ для погоды
-ADMIN_ID = 1
-matplotlib.use('agg') # это нужно для графика
 
 logging.basicConfig(
     filename='bot_work.log',
     format='%(asctime)s %(levelname)s %(name)s %(message)s'
 )
+
+LaserPhysicHelpBot = telebot.TeleBot('') # токен лежит в тг
+WEATHER_API_KEY = ''  # API ключ для погоды
+ADMIN_ID = 0
+matplotlib.use('agg') # это нужно для графика
 
 # Чистка логов
 def safe_log_clear():
@@ -42,7 +43,7 @@ def clear_log_file():
         print(f"Ошибка очистки лога: {str(e)}")
 
 
-@LaserPhysicHelpBot.message_handler(commands=['clear_log'])
+@LaserPhysicHelpBot.message_handler(commands=['clear_logs'])
 def clear_log_command(message):
     if message.from_user.id == ADMIN_ID:
         clear_log_file()
@@ -80,18 +81,13 @@ def startBot(message):
 @LaserPhysicHelpBot.message_handler(content_types=['text'])
 def Random_text(message):
     first_mess = "Используйте кнопки для правильной работы"
+    text = str(message.text)
     # логируем сообщения
-    try:
-        text = message.text.encode('utf-8').decode('utf-8')
-    except UnicodeEncodeError:
-        text = message.text.encode('unicode_escape').decode('utf-8')
     logging.warning(f"Случайный текст пользователя: {text}")
     LaserPhysicHelpBot.send_message(message.chat.id, first_mess)
 
 
-# Принимает любой файл, который отправит пользователь:
-# 1. Нужно добавить приём только .txt
-# 2. Нужно принимать файл только при переходе по соответствующей кнопке
+# Принимает только файл в формате example.txt
 # О расчёте подробнее здесь: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.peak_widths.html
 @LaserPhysicHelpBot.message_handler(content_types=['document'],
                                     func=lambda message: user_states.get(message.chat.id) == "waiting_for_txt")
@@ -112,8 +108,9 @@ def graphic_peak_widths(message):
         plt.plot(peaks, x[peaks], "x")
         plt.hlines(*results_half[1:], color="C2")
         plt.hlines(*results_full[1:], color="C3")
-        plt.savefig("test.png")
-        LaserPhysicHelpBot.send_photo(chat_id, photo=open('test.png', 'rb'))
+        plt.savefig("static/img/graph.png")
+        LaserPhysicHelpBot.send_photo(chat_id, photo=open('static/img/graph.png', 'rb'))
+        vk_conn.run()
     except Exception as e:
         LaserPhysicHelpBot.reply_to(message, f"⚠️ Ошибка: {str(e)}")
 
@@ -285,5 +282,6 @@ def about_len(message):
 
 
 if __name__ == "__main__":
+    vk_conn = Vk_upload()
     calc_for_buttons = ButtonCalc()
     LaserPhysicHelpBot.infinity_polling()
