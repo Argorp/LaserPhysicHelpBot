@@ -1,2 +1,6 @@
-2025-04-22 01:12:23,389 ERROR TeleBot Infinity polling: polling exited
-2025-04-22 01:12:23,389 ERROR TeleBot Break infinity polling
+2025-04-29 00:53:18,541 ERROR TeleBot Infinity polling: polling exited
+2025-04-29 00:53:18,541 ERROR TeleBot Break infinity polling
+2025-04-29 01:10:27,032 ERROR root Ошибка авторизации: Unknown error (AUTH; no sid). Please send a bugreport to GitHub: https://github.com/python273/vk_api/issues
+2025-04-29 01:10:32,861 WARNING root Случайный текст пользователя: asd
+2025-04-29 01:10:50,865 ERROR TeleBot Infinity polling: polling exited
+2025-04-29 01:10:50,865 ERROR TeleBot Break infinity polling
