@@ -3,10 +3,10 @@ import vk_api
 import logging
 
 
-LOGIN = '?'
-PASSWORD = '?'
-ALBUM_ID = 0
-GROUP_ID = 1
+LOGIN = ''
+PASSWORD = ''
+ALBUM_ID = 1
+GROUP_ID = 2
 
 logging.basicConfig(
     filename='bot_work.log',
@@ -23,7 +23,8 @@ class Vk_upload:
         self.vk_sess = vk_api.VkApi(
             login=LOGIN,
             password=PASSWORD,
-            auth_handler=self.two_factor_handler()
+            auth_handler=self.two_factor_handler,
+            captcha_handler=self.captcha_handler
         )
         self.album_id = ALBUM_ID
         self.group_id = GROUP_ID
@@ -38,6 +39,11 @@ class Vk_upload:
     def two_factor_handler():
         code = input("Введите код двухфакторной аутентификации: ")
         return code, False
+
+    @staticmethod
+    def captcha_handler(captcha):
+        print(f"Откройте ссылку в браузере: {captcha.get_url()}")
+        return input("Введите текст капчи: ")
 
     def run(self):
         self.upload = vk_api.VkUpload(self.vk_sess)

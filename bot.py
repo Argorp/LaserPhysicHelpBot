@@ -15,9 +15,9 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(name)s %(message)s'
 )
 
-LaserPhysicHelpBot = telebot.TeleBot('') # токен лежит в тг
-WEATHER_API_KEY = ''  # API ключ для погоды
-ADMIN_ID = 0
+LaserPhysicHelpBot = telebot.TeleBot('7') # токен лежит в тг
+WEATHER_API_KEY = '23'  # API ключ для погоды
+ADMIN_ID = 2
 matplotlib.use('agg') # это нужно для графика
 
 # Чистка логов
