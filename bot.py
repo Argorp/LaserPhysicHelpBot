@@ -5,6 +5,8 @@ import numpy as np
 import logging
 from scipy.signal import find_peaks, peak_widths
 from telebot import types
+import threading
+from datetime import datetime, timedelta
 
 from Calc_classes.Vk_album import Vk_upload
 from Calc_classes.WeatherHolder import WeatherHandler
@@ -15,10 +17,39 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(name)s %(message)s'
 )
 
-LaserPhysicHelpBot = telebot.TeleBot('7') # токен лежит в тг
-WEATHER_API_KEY = '23'  # API ключ для погоды
-ADMIN_ID = 2
+LaserPhysicHelpBot = telebot.TeleBot('7959181544:AAFm19Tk_hVbZUHK6nv6-pft1tnEsVE9tqs') # токен лежит в тг
+WEATHER_API_KEY = 'd1b1cb35e41b7c0236f1779be078d858'  # API ключ для погоды
+ADMIN_ID = 2118400109
 matplotlib.use('agg') # это нужно для графика
+
+user_states, user_activity = dict(), dict()
+
+spam_limit = 10
+lock = threading.Lock()
+
+
+def answer_to_spam_activity(message):
+    LaserPhysicHelpBot.send_message(message.chat.id, "⚠️ Слишком много запросов! Подождите 1 минуту.")
+    logging.warning(f"Обнаружен спам от пользователя {message.from_user.id}")
+    return
+
+def check_spam(user_id):
+    with lock:
+        now = datetime.now()
+        if user_id not in user_activity:
+            user_activity[user_id] = {'count': 1, 'start_time': now}
+            return False
+        activity = user_activity[user_id]
+        if now - activity['start_time'] > timedelta(minutes=1):
+            activity['count'] = 1
+            activity['start_time'] = now
+            return False
+        else:
+            activity['count'] += 1
+            if activity['count'] > spam_limit:
+                return True
+            return False
+
 
 # Чистка логов
 def safe_log_clear():
@@ -51,10 +82,11 @@ def clear_log_command(message):
     else:
         LaserPhysicHelpBot.reply_to(message, "У вас нет прав на эту операцию")
 
-user_states = {}
-
 @LaserPhysicHelpBot.message_handler(commands=['start'])
 def startBot(message):
+    if check_spam(message.from_user.id):
+        answer_to_spam_activity(message)
+        return
     # это стартовое сообщение
     first_mess = (f"<b>{message.from_user.first_name} {message.from_user.last_name}</b>, "
                   f"привет!\nМой функционал можешь прочитать по нажатию кнопки."
@@ -80,6 +112,9 @@ def startBot(message):
 # при случайном вводе текста, пишется ошибка
 @LaserPhysicHelpBot.message_handler(content_types=['text'])
 def Random_text(message):
+    if check_spam(message.from_user.id):
+        answer_to_spam_activity(message)
+        return
     first_mess = "Используйте кнопки для правильной работы"
     text = str(message.text)
     # логируем сообщения
@@ -92,11 +127,19 @@ def Random_text(message):
 @LaserPhysicHelpBot.message_handler(content_types=['document'],
                                     func=lambda message: user_states.get(message.chat.id) == "waiting_for_txt")
 def graphic_peak_widths(message):
+    if check_spam(message.from_user.id):
+        answer_to_spam_activity(message)
+        return
     if not message.document.file_name.endswith('.txt'):
         LaserPhysicHelpBot.reply_to(message, "❌ Файл должен быть .txt!")
         return
     user_states.pop(message.chat.id, None)
     try:
+        user = message.from_user
+        username = f"@{user.username}" if user.username else \
+            f"{user.first_name} {user.last_name}".strip() if user.last_name else \
+                f"{user.first_name}"
+        profile_link = f"tg://user?id={user.id}"
         chat_id = message.chat.id
         file_info = LaserPhysicHelpBot.get_file(message.document.file_id)
         downloaded_file = LaserPhysicHelpBot.download_file(file_info.file_path).decode().strip('\r').strip('\n').split()
@@ -110,7 +153,10 @@ def graphic_peak_widths(message):
         plt.hlines(*results_full[1:], color="C3")
         plt.savefig("static/img/graph.png")
         LaserPhysicHelpBot.send_photo(chat_id, photo=open('static/img/graph.png', 'rb'))
-        vk_conn.run()
+        vk_conn.run(
+            username=username,
+            profile_link=profile_link
+        )
     except Exception as e:
         LaserPhysicHelpBot.reply_to(message, f"⚠️ Ошибка: {str(e)}")
 
@@ -119,6 +165,9 @@ def graphic_peak_widths(message):
 # Она зациклена, то есть при получении сигнала от кнопки, снова проходится по этим if-ам.
 @LaserPhysicHelpBot.callback_query_handler(func=lambda call: True)
 def response(function_call):
+    if check_spam(function_call.from_user.id):
+        LaserPhysicHelpBot.answer_callback_query(function_call.id, "⚠️ Слишком много запросов! Подождите 1 минуту.")
+        return
     if function_call.message:
         # Описание
         if function_call.data == "description":
