@@ -17,9 +17,9 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(name)s %(message)s'
 )
 
-LaserPhysicHelpBot = telebot.TeleBot('7959181544:AAFm19Tk_hVbZUHK6nv6-pft1tnEsVE9tqs') # токен лежит в тг
-WEATHER_API_KEY = 'd1b1cb35e41b7c0236f1779be078d858'  # API ключ для погоды
-ADMIN_ID = 2118400109
+LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
+WEATHER_API_KEY = '?'  # API ключ для погоды
+ADMIN_ID =2
 matplotlib.use('agg') # это нужно для графика
 
 user_states, user_activity = dict(), dict()

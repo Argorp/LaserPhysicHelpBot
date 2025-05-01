@@ -14,7 +14,7 @@ class Vk_upload:
     def __init__(self):
         self.upload = None
         self.path = os.path.join('static', 'img')
-        self.vk_sess = vk_api.VkApi(token="vk1.a.pKAkF-xVRr-izepGZBU7PhY2SzOrMsYJjBKPPkwrIfhFYFgwBGFaWDZ0S9D2-slpXJnHUoAguHwV3chzar3i7Rljzs8LpZT4dm9HEBs3S9RnmAfoGpiUzbKXwI2WYJX9RWX86wRrxjfQXdm4rnB_wLwVVRlMBMEBKhadv3VRfXK1ea3nLFrYfq38ltlSlRQLr_nWf0fkvDn-FpgE6LPapA")
+        self.vk_sess = vk_api.VkApi(token="?")
         self.upload = vk_api.VkUpload(self.vk_sess)
         self.album_id = ALBUM_ID
         self.group_id = GROUP_ID
