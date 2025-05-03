@@ -7,10 +7,13 @@ from scipy.signal import find_peaks, peak_widths
 from telebot import types
 import threading
 from datetime import datetime, timedelta
+from models.db import init_db, get_db
 
 from Calc_classes.Vk_album import Vk_upload
 from Calc_classes.WeatherHolder import WeatherHandler
 from Calc_classes.MainCalc import ButtonCalc
+from models.feedback import Feedback
+from models.user import User
 
 logging.basicConfig(
     filename='bot_work.log',
@@ -19,7 +22,7 @@ logging.basicConfig(
 
 LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
 WEATHER_API_KEY = '?'  # API ключ для погоды
-ADMIN_ID =2
+ADMIN_ID = 2
 matplotlib.use('agg') # это нужно для графика
 
 user_states, user_activity = dict(), dict()
@@ -84,6 +87,17 @@ def clear_log_command(message):
 
 @LaserPhysicHelpBot.message_handler(commands=['start'])
 def startBot(message):
+    db = next(get_db())
+    user = db.query(User).filter(User.user_id == message.from_user.id).first()
+    if not user:
+        new_user = User(
+            user_id=message.from_user.id,
+            username=message.from_user.username,
+            first_name=message.from_user.first_name,
+            last_name=message.from_user.last_name
+        )
+        db.add(new_user)
+        db.commit()
     if check_spam(message.from_user.id):
         answer_to_spam_activity(message)
         return
@@ -285,9 +299,28 @@ def get_weather(message):
 
 
 def remember_ans(message):
-    calc_for_buttons.write_an_comment(message.text, message.chat.id)
-    response_bot = "Спасибо за ваш отзыв 💝!\nМой разработчик обязательно рассмотрит ваш отзыв."
-    LaserPhysicHelpBot.send_message(message.chat.id, response_bot)
+    try:
+        db = next(get_db())
+        user = db.query(User).filter(User.user_id == message.from_user.id).first()
+        feedback = db.query(Feedback).filter(Feedback.user_id == user.user_id).first()
+        if feedback:
+            feedback.text = message.text
+            feedback.created_at = datetime.utcnow()
+        else:
+            feedback = Feedback(
+                user_id=user.user_id,
+                text=message.text
+            )
+            db.add(feedback)
+        db.commit()
+        response_bot = "Спасибо за ваш отзыв 💝!\nМой разработчик обязательно рассмотрит ваш отзыв."
+        LaserPhysicHelpBot.send_message(message.chat.id, response_bot)
+    except Exception as e:
+        logging.error(f"Ошибка сохранения отзыва: {str(e)}")
+        LaserPhysicHelpBot.send_message(message.chat.id, "⚠️ Произошла ошибка при сохранении отзыва")
+        db.rollback()
+    finally:
+        db.close()
 
 def flat_top(message):
     LaserPhysicHelpBot.send_message(message.chat.id, calc_for_buttons.flat_top(message))
@@ -322,8 +355,8 @@ def about_len(message):
             for cur_color in calc_for_buttons.color_ranges:
                 start, end = calc_for_buttons.color_ranges[cur_color]
                 if start <= lens <= end:
-                    outer_str = (f"Вы спросили о длине волны {lens} нм. Это соответствует {cur_color} цвету\n"
-                                 f"Прочитать больше можно по ссылке: https://astronomy.ru/forum/index.php/topic,50316.0.html")
+                    outer_str = (f"Вы спросили о длине волны {lens} нм. Скорее всего, вы иимели в виду {cur_color} цвет\n"
+                                 f"Подробнее по ссылке: https://astronomy.ru/forum/index.php/topic,50316.0.html")
                     LaserPhysicHelpBot.send_message(message.chat.id, outer_str)
                     break
     except ValueError:
@@ -331,6 +364,7 @@ def about_len(message):
 
 
 if __name__ == "__main__":
+    init_db()
     vk_conn = Vk_upload()
     calc_for_buttons = ButtonCalc()
     LaserPhysicHelpBot.infinity_polling()
