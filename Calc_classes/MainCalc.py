@@ -6,7 +6,7 @@ from constants import *
 class ButtonCalc:
     def __init__(self):
         self.color_ranges = {}
-        con = sqlite3.connect('Bot_db.db')
+        con = sqlite3.connect('db_dir/colors.db')
         cur = con.cursor()
         result = cur.execute("""SELECT * FROM colors_param""").fetchall()
         for temp in result:
@@ -85,10 +85,3 @@ class ButtonCalc:
             return f"Частота излучения составляет: {self.format_result(freq / one_TGz)} Гц"
         except ValueError:
             return self.bad_params()
-
-    def write_an_comment(self, com: str, id_user: int):
-        con = sqlite3.connect('Bot_db.db')
-        cur = con.cursor()
-        cur.execute("""INSERT INTO user_comment(user_name, comment) VALUES (?, ?)""", (id_user, com))
-        con.commit()
-        con.close()
