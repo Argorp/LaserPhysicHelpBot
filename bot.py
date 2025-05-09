@@ -175,8 +175,8 @@ def graphic_peak_widths(message):
         plt.plot(peaks, x[peaks], "x")
         plt.hlines(*results_half[1:], color="C2")
         plt.hlines(*results_full[1:], color="C3")
-        plt.savefig("/tmp/graph.png")
-        LaserPhysicHelpBot.send_photo(chat_id, photo=open('/tmp/graph.png', 'rb'))
+        plt.savefig("static/img/graph.png")
+        LaserPhysicHelpBot.send_photo(chat_id, photo=open('static/img/graph.png', 'rb'))
         vk_conn.run(
             username=username,
             profile_link=profile_link
@@ -393,11 +393,11 @@ if __name__ == "__main__":
     vk_conn = Vk_upload()
     calc_for_buttons = ButtonCalc()
     # Для локального тестирования
-    #LaserPhysicHelpBot.remove_webhook()
-    #LaserPhysicHelpBot.infinity_polling()
+    LaserPhysicHelpBot.remove_webhook()
+    LaserPhysicHelpBot.infinity_polling()
     # Для хостинга
-    LaserPhysicHelpBot.set_webhook(
-        url=f'https://{os.environ.get("PROJECT_NAME")}.glitch.me/webhook'
-    )
-    port = int(os.environ.get("PORT", 3000))
-    app.run(host='0.0.0.0', port=port)
+    #LaserPhysicHelpBot.set_webhook(
+    #    url=f'https://{os.environ.get("PROJECT_NAME")}.glitch.me/webhook'
+    #)
+    #port = int(os.environ.get("PORT", 3000))
+    #app.run(host='0.0.0.0', port=port)

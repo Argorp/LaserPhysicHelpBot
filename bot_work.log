@@ -23,3 +23,16 @@ INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
 ERROR:TeleBot:Infinity polling: polling exited
 ERROR:TeleBot:Break infinity polling
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
+ERROR:root:Ошибка загрузки graph.png: [15] Access denied: no access to call this method. It cannot be called with current scopes.
+ERROR:TeleBot:Infinity polling: polling exited
+ERROR:TeleBot:Break infinity polling
