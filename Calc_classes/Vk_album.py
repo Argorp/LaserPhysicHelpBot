@@ -2,19 +2,25 @@ import os
 import vk_api
 import logging
 
+from dotenv import load_dotenv
+
 ALBUM_ID = 307346501
 GROUP_ID = 230183619
 
 logging.basicConfig(
-    filename='bot_work.log',
-    format='%(asctime)s %(levelname)s %(name)s %(message)s'
+    handlers=[
+        logging.FileHandler("bot_work.log"),
+        logging.StreamHandler()
+    ]
 )
+
+load_dotenv()
 
 class Vk_upload:
     def __init__(self):
         self.upload = None
         self.path = os.path.join('static', 'img')
-        self.vk_sess = vk_api.VkApi(token="?")
+        self.vk_sess = vk_api.VkApi(token=str(os.environ.get('vk_token')))
         self.upload = vk_api.VkUpload(self.vk_sess)
         self.album_id = ALBUM_ID
         self.group_id = GROUP_ID

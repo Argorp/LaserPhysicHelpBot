@@ -1,4 +1,18 @@
-2025-05-03 22:44:36,218 ERROR TeleBot Infinity polling: polling exited
-2025-05-03 22:44:36,218 ERROR TeleBot Break infinity polling
-2025-05-03 22:57:43,438 ERROR TeleBot Infinity polling: polling exited
-2025-05-03 22:57:43,438 ERROR TeleBot Break infinity polling
+2025-05-09 13:33:52,089 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:33:52] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:33:57,450 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:33:57] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:34:09,930 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:34:09] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:34:12,247 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:34:12] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:34:18,559 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:34:18] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:34:22,813 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:34:22] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:35:25,985 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:35:25] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:35:27,649 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:35:27] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:35:30,284 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:35:30] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:35:35,654 INFO werkzeug 127.0.0.1 - - [09/May/2025 13:35:35] "POST /webhook HTTP/1.1" 200 -
+2025-05-09 13:35:36,575 ERROR root Ошибка загрузки graph.png: [5] User authorization failed: access_token has expired.
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.88.164:3000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [09/May/2025 14:31:33] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [09/May/2025 14:31:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

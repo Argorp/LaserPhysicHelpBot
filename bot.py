@@ -1,29 +1,39 @@
-import matplotlib
-import telebot
-import matplotlib.pyplot as plt
-import numpy as np
 import logging
-from scipy.signal import find_peaks, peak_widths
-from telebot import types
+import os
 import threading
 from datetime import datetime, timedelta
-from models.db import init_db, get_db
+from dotenv import load_dotenv
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import telebot
+from flask import Flask, request
+from scipy.signal import find_peaks, peak_widths
+from telebot import types
+
+from Calc_classes.MainCalc import ButtonCalc
 from Calc_classes.Vk_album import Vk_upload
 from Calc_classes.WeatherHolder import WeatherHandler
-from Calc_classes.MainCalc import ButtonCalc
+from models.db import init_db, get_db
 from models.feedback import Feedback
 from models.user import User
 
 logging.basicConfig(
-    filename='bot_work.log',
-    format='%(asctime)s %(levelname)s %(name)s %(message)s'
+    handlers=[
+        logging.FileHandler("bot_work.log"),
+        logging.StreamHandler()
+    ]
 )
 
-LaserPhysicHelpBot = telebot.TeleBot('?') # токен лежит в тг
-WEATHER_API_KEY = '?'  # API ключ для погоды
-ADMIN_ID = 2
-matplotlib.use('agg') # это нужно для графика
+app = Flask(__name__)
+
+load_dotenv()
+
+LaserPhysicHelpBot = telebot.TeleBot(str(os.environ.get('tg_token')))
+WEATHER_API_KEY = str(os.environ.get('tg_token'))  # API ключ для погоды
+ADMIN_ID = 2118400109
+matplotlib.use('Agg') # это нужно для графика
 
 user_states, user_activity = dict(), dict()
 
@@ -165,8 +175,8 @@ def graphic_peak_widths(message):
         plt.plot(peaks, x[peaks], "x")
         plt.hlines(*results_half[1:], color="C2")
         plt.hlines(*results_full[1:], color="C3")
-        plt.savefig("static/img/graph.png")
-        LaserPhysicHelpBot.send_photo(chat_id, photo=open('static/img/graph.png', 'rb'))
+        plt.savefig("/tmp/graph.png")
+        LaserPhysicHelpBot.send_photo(chat_id, photo=open('/tmp/graph.png', 'rb'))
         vk_conn.run(
             username=username,
             profile_link=profile_link
@@ -355,7 +365,7 @@ def about_len(message):
             for cur_color in calc_for_buttons.color_ranges:
                 start, end = calc_for_buttons.color_ranges[cur_color]
                 if start <= lens <= end:
-                    outer_str = (f"Вы спросили о длине волны {lens} нм. Скорее всего, вы иимели в виду {cur_color} цвет\n"
+                    outer_str = (f"Вы спросили о длине волны {lens} нм. Скорее всего, вы имели в виду {cur_color} цвет\n"
                                  f"Подробнее по ссылке: https://astronomy.ru/forum/index.php/topic,50316.0.html")
                     LaserPhysicHelpBot.send_message(message.chat.id, outer_str)
                     break
@@ -363,8 +373,31 @@ def about_len(message):
         LaserPhysicHelpBot.send_message(message.chat.id, "Неправильный тип данных!")
 
 
+@app.route('/')
+def index():
+    return "Бот работает!"
+
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        LaserPhysicHelpBot.process_new_updates([update])
+        return 'ok', 200
+    return 'not ok', 403
+
+
 if __name__ == "__main__":
     init_db()
     vk_conn = Vk_upload()
     calc_for_buttons = ButtonCalc()
-    LaserPhysicHelpBot.infinity_polling()
+    # Для локального тестирования
+    #LaserPhysicHelpBot.remove_webhook()
+    #LaserPhysicHelpBot.infinity_polling()
+    # Для хостинга
+    LaserPhysicHelpBot.set_webhook(
+        url=f'https://{os.environ.get("PROJECT_NAME")}.glitch.me/webhook'
+    )
+    port = int(os.environ.get("PORT", 3000))
+    app.run(host='0.0.0.0', port=port)
